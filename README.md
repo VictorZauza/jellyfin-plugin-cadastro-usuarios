@@ -5,6 +5,7 @@ onde o administrador confirma cada solicitação apertando um botão.
 
 - Compatível com **Jellyfin 10.11.x** (`net9.0`, `targetAbi 10.11.0.0`)
 - Tela de cadastro responsiva: funciona bem no celular e no computador
+- Botão "Criar conta" na própria tela de login, com o formulário ali mesmo
 - Testado de ponta a ponta contra um Jellyfin 10.11.5 real
 
 ---
@@ -89,23 +90,47 @@ o Jellyfin oferece a atualização em loop.
 
 ---
 
-## Botão "Criar minha conta" na tela de login
+## Botão "Criar conta" na tela de login
 
-A tela de login do Jellyfin não tem botão de cadastro e nenhum plugin de servidor consegue
-adicionar um por dentro dela — ela faz parte do `jellyfin-web`, um aplicativo já compilado.
-O caminho suportado, que sobrevive a atualizações do servidor, usa dois campos do próprio
-Jellyfin (Painel → **Geral** → seção **Marca**):
+A partir da versão 1.1.0.0 isso é **automático**: o plugin coloca um botão "Criar conta"
+na tela de login e, ao clicar, o formulário aparece ali mesmo — sem trocar de página,
+sem abrir aba. O visitante preenche, envia e a solicitação cai no painel do administrador.
 
-**1. Campo "Aviso legal no login":**
+Não é preciso configurar nada. Para desligar, desmarque **"Mostrar o formulário na tela
+de login"** nas configurações do plugin.
+
+### Como isso funciona
+
+A tela de login faz parte do `jellyfin-web`, um aplicativo já compilado, e um plugin não
+consegue entrar nela por dentro. O que o plugin faz é acrescentar uma linha no `index.html`
+do cliente web, apontando para um script que ele mesmo serve:
+
+```html
+<script id="jellyfin-plugin-userregistration" defer
+        src="configurationpage?name=UserRegistration.js&v=1.1.0.0"></script>
+```
+
+É a mesma técnica de plugins como Intro Skipper e Jellyscrub. Pontos que valem saber:
+
+- **Atualização do Jellyfin apaga essa linha**, porque o `index.html` é substituído. O plugin
+  refaz a marcação a cada inicialização do servidor, então volta sozinho.
+- **Se a pasta do cliente web for somente leitura**, a marcação não é feita. O plugin registra
+  um aviso no log e continua funcionando pelo endereço `/UserRegistration/Page`.
+- O script só age na tela de login. Nas demais telas do Jellyfin ele não faz nada.
+
+### Alternativa sem marcar o index.html
+
+Se preferir não deixar o plugin alterar o cliente web, desmarque a opção e use os campos
+nativos do Jellyfin (Painel → **Geral** → seção **Marca**). Aí o botão abre a tela de
+cadastro em outra aba, em vez de mostrar o formulário ali mesmo:
+
+**Campo "Aviso legal no login":**
 
 ```
 [Criar minha conta](/UserRegistration/Page)
 ```
 
-> Use o caminho relativo (`/UserRegistration/Page`). Assim o botão continua funcionando se
-> o domínio ou a porta mudarem.
-
-**2. Campo "Código CSS personalizado":**
+**Campo "Código CSS personalizado":**
 
 ```css
 #loginPage .readOnlyContent { display: flex; flex-direction: column; }
@@ -124,28 +149,8 @@ Jellyfin (Painel → **Geral** → seção **Marca**):
 }
 ```
 
-Salve e recarregue a tela de login: o botão aparece logo abaixo de **Entrar**, com a mesma
-largura e altura dos outros botões, tanto no modo de lista de usuários quanto no login manual.
-
-Variante contornada (deixa o "Entrar" como único botão azul) — troque o bloco do `a` por:
-
-```css
-#loginPage .loginDisclaimer a {
-    display: block; box-sizing: border-box; width: 100%;
-    margin: 0.25em 0; padding: 0.82em 1em;
-    border: 2px solid #00a4dc; border-radius: 0.2em;
-    background: transparent; color: #00a4dc;
-    font-weight: 600; line-height: 1.35;
-    text-align: center; text-decoration: none; transition: 0.2s;
-}
-#loginPage .loginDisclaimer a:hover,
-#loginPage .loginDisclaimer a:focus {
-    background: rgba(0, 164, 220, .15); color: #fff; text-decoration: none;
-}
-```
-
-O botão abre a tela de cadastro em **nova aba** — isso vem do próprio Jellyfin, que força
-`target="_blank"` em qualquer link desse campo, e não dá para mudar por CSS.
+Os arquivos `botao-login-azul.css` e `botao-login-contornado.css` do repositório trazem essa
+variante e uma versão contornada.
 
 ---
 
@@ -161,6 +166,7 @@ O botão abre a tela de cadastro em **nova aba** — isso vem do próprio Jellyf
 | Permitir recado | Campo de texto opcional para o solicitante se identificar |
 | Copiar permissões de | Usa um usuário existente como modelo ao aprovar |
 | Permissões padrão | Bibliotecas, acesso remoto, download, transcodificação, sessões |
+| Mostrar o formulário na tela de login | Liga/desliga o botão "Criar conta" dentro da tela de login |
 | Textos da tela pública | Título, boas-vindas e mensagem de sucesso |
 
 Poderes de administrador **nunca** são copiados do perfil modelo, e contas desativadas não

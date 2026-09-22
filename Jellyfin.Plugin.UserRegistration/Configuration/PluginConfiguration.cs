@@ -75,6 +75,12 @@ public class PluginConfiguration : BasePluginConfiguration
     public int DefaultMaxActiveSessions { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether o formulário de cadastro aparece
+    /// dentro da própria tela de login do Jellyfin.
+    /// </summary>
+    public bool InjectLoginForm { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets o título exibido na tela pública de cadastro.
     /// </summary>
     public string PageTitle { get; set; } = "Criar conta";

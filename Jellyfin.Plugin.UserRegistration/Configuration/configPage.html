@@ -121,6 +121,18 @@
 
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
+                            <input id="InjectLoginForm" name="InjectLoginForm" type="checkbox" is="emby-checkbox"/>
+                            <span>Mostrar o formulário na tela de login</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Coloca um botão "Criar conta" na tela de login, que abre o formulário ali mesmo.
+                            Para isso, o plugin marca o index.html do cliente web — a marcação é refeita a cada
+                            inicialização do servidor. Se desmarcar, a marcação é removida.
+                        </div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
                             <input id="AllowMessage" name="AllowMessage" type="checkbox" is="emby-checkbox"/>
                             <span>Permitir recado para o administrador</span>
                         </label>
@@ -408,6 +420,7 @@
                     page.querySelector('#MaxPendingRequests').value = config.MaxPendingRequests;
                     page.querySelector('#MaxRequestsPerHourPerAddress').value = config.MaxRequestsPerHourPerAddress;
                     page.querySelector('#AllowMessage').checked = config.AllowMessage;
+                    page.querySelector('#InjectLoginForm').checked = config.InjectLoginForm;
                     page.querySelector('#DefaultEnableAllFolders').checked = config.DefaultEnableAllFolders;
                     page.querySelector('#DefaultEnableRemoteAccess').checked = config.DefaultEnableRemoteAccess;
                     page.querySelector('#DefaultEnableVideoPlaybackTranscoding').checked = config.DefaultEnableVideoPlaybackTranscoding;
@@ -465,6 +478,7 @@
                     config.MaxPendingRequests = parseInt(page.querySelector('#MaxPendingRequests').value, 10) || 0;
                     config.MaxRequestsPerHourPerAddress = parseInt(page.querySelector('#MaxRequestsPerHourPerAddress').value, 10) || 0;
                     config.AllowMessage = page.querySelector('#AllowMessage').checked;
+                    config.InjectLoginForm = page.querySelector('#InjectLoginForm').checked;
                     config.TemplateUserId = page.querySelector('#TemplateUserId').value || EMPTY_GUID;
                     config.DefaultEnableAllFolders = page.querySelector('#DefaultEnableAllFolders').checked;
                     config.DefaultEnableRemoteAccess = page.querySelector('#DefaultEnableRemoteAccess').checked;

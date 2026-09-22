@@ -8,12 +8,20 @@
     "category": "General",
     "versions": [
       {
+        "version": "1.1.0.0",
+        "changelog": "Formulário de cadastro dentro da própria tela de login do Jellyfin.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/VictorZauza/jellyfin-plugin-cadastro-usuarios/main/dist/cadastro-usuarios_1.1.0.0.zip",
+        "checksum": "1EACFE1848C2080F90CDE9277CBBF6F7",
+        "timestamp": "2026-09-22T17:30:05Z"
+      },
+      {
         "version": "1.0.0.0",
-        "changelog": "Versão 1.0.0.0.",
+        "changelog": "Primeira versão.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://raw.githubusercontent.com/VictorZauza/jellyfin-plugin-cadastro-usuarios/main/dist/cadastro-usuarios_1.0.0.0.zip",
         "checksum": "D273936A4FC776C2730ED4BC2013F0E8",
-        "timestamp": "2026-09-18T19:18:40Z"
+        "timestamp": "2026-09-18T00:00:00Z"
       }
     ]
   }

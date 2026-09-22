@@ -53,6 +53,16 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
                     CultureInfo.InvariantCulture,
                     "{0}.Configuration.configPage.html",
                     GetType().Namespace)
+            },
+            new PluginPageInfo
+            {
+                // Servido em /web/configurationpage?name=UserRegistration.js — é daqui
+                // que a tela de login carrega o formulário de cadastro.
+                Name = "UserRegistration.js",
+                EmbeddedResourcePath = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}.Web.UserRegistration.js",
+                    GetType().Namespace)
             }
         };
     }

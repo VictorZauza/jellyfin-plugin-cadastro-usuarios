@@ -14,5 +14,6 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
     {
         serviceCollection.AddSingleton<RequestStore>();
         serviceCollection.AddSingleton<RegistrationService>();
+        serviceCollection.AddHostedService<LoginPageInjector>();
     }
 }

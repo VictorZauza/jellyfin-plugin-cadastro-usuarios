@@ -26,6 +26,8 @@
     <EmbeddedResource Include="Configuration\configPage.html" />
     <None Remove="Web\register.html" />
     <EmbeddedResource Include="Web\register.html" />
+    <None Remove="Web\UserRegistration.js" />
+    <EmbeddedResource Include="Web\UserRegistration.js" />
   </ItemGroup>
 
 </Project>
