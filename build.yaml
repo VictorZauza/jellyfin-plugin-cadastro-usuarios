@@ -1,7 +1,7 @@
 ---
 name: "Cadastro de Usuários"
 guid: "b4f0a5c2-9d71-4f3a-8f21-6c2e5a7d41b9"
-version: "1.1.0.0"
+version: "1.1.1.0"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 overview: "Cadastro de usuários com aprovação do administrador"
@@ -14,4 +14,4 @@ owner: "victor.flores"
 artifacts:
   - "Jellyfin.Plugin.UserRegistration.dll"
 changelog: >
-  1.1.0.0 - Formulário de cadastro dentro da própria tela de login.
+  1.1.1.0 - Corrige o cadastro no Jellyfin 10.11.6 ou mais novo (mudança na API de senha).

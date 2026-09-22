@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -78,6 +80,15 @@ public class RegistrationService
 
     private static readonly ConcurrentDictionary<string, List<DateTime>> _recentAttempts =
         new ConcurrentDictionary<string, List<DateTime>>(StringComparer.OrdinalIgnoreCase);
+
+    // O Jellyfin mudou a assinatura de ChangePassword no meio da série 10.11:
+    // até a 10.11.5 é (User, senha); da 10.11.6 em diante é (Guid, senha).
+    // Chamar por reflexão faz o mesmo binário servir para as duas.
+    private static readonly MethodInfo? _changePasswordById =
+        typeof(IUserManager).GetMethod("ChangePassword", new[] { typeof(Guid), typeof(string) });
+
+    private static readonly MethodInfo? _changePasswordByUser =
+        typeof(IUserManager).GetMethod("ChangePassword", new[] { typeof(User), typeof(string) });
 
     private readonly IUserManager _userManager;
     private readonly RequestStore _store;
@@ -201,7 +212,7 @@ public class RegistrationService
 
             try
             {
-                await _userManager.ChangePassword(user, password).ConfigureAwait(false);
+                await ChangePasswordAsync(user, password).ConfigureAwait(false);
                 await ApplyPendingPolicyAsync(user).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -426,6 +437,36 @@ public class RegistrationService
         lock (attempts)
         {
             attempts.Add(DateTime.UtcNow);
+        }
+    }
+
+    /// <summary>
+    /// Define a senha do usuário, funcionando tanto na assinatura antiga
+    /// (User, senha) quanto na nova (Guid, senha) do Jellyfin.
+    /// </summary>
+    private async Task ChangePasswordAsync(User user, string password)
+    {
+        var method = _changePasswordById ?? _changePasswordByUser;
+        if (method is null)
+        {
+            throw new RegistrationException(
+                500,
+                "Esta versão do Jellyfin não é compatível com o plugin (ChangePassword não encontrado).");
+        }
+
+        object target = _changePasswordById is not null ? user.Id : user;
+
+        try
+        {
+            if (method.Invoke(_userManager, new object[] { target, password }) is Task task)
+            {
+                await task.ConfigureAwait(false);
+            }
+        }
+        catch (TargetInvocationException ex) when (ex.InnerException is not null)
+        {
+            // Deixa a exceção original subir, e não o invólucro da reflexão.
+            ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
         }
     }
 

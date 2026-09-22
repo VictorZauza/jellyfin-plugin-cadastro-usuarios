@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "1.1.1.0",
+        "changelog": "Corrige o cadastro no Jellyfin 10.11.6 ou mais novo (mudança na API de senha do servidor).",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/VictorZauza/jellyfin-plugin-cadastro-usuarios/main/dist/cadastro-usuarios_1.1.1.0.zip",
+        "checksum": "BE6A1A7E9E157DE70FD8FEBF0D18EC2F",
+        "timestamp": "2026-09-22T18:17:58Z"
+      },
+      {
         "version": "1.1.0.0",
         "changelog": "Formulário de cadastro dentro da própria tela de login do Jellyfin.",
         "targetAbi": "10.11.0.0",
