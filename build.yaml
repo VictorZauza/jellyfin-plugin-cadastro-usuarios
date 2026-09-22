@@ -1,0 +1,17 @@
+---
+name: "Cadastro de Usuários"
+guid: "b4f0a5c2-9d71-4f3a-8f21-6c2e5a7d41b9"
+version: "1.0.0.0"
+targetAbi: "10.11.0.0"
+framework: "net9.0"
+overview: "Cadastro de usuários com aprovação do administrador"
+description: >
+  Publica uma tela onde o visitante cria a própria conta com nome de usuário e senha.
+  A conta é criada desativada e só passa a funcionar depois que o administrador aperta
+  "Confirmar cadastro" no painel do plugin.
+category: "General"
+owner: "victor.flores"
+artifacts:
+  - "Jellyfin.Plugin.UserRegistration.dll"
+changelog: >
+  1.0.0.0 - Primeira versão.

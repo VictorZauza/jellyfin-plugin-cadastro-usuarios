@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="dark light">
+<title>Criar conta</title>
+<style>
+  :root {
+    --bg: #101014;
+    --bg-grad-a: #16161d;
+    --bg-grad-b: #0b0b0f;
+    --card: #1b1b23;
+    --card-border: #2a2a36;
+    --text: #f2f2f5;
+    --muted: #9a9aa8;
+    --accent: #00a4dc;
+    --accent-strong: #0089bb;
+    --danger: #e5484d;
+    --danger-bg: rgba(229, 72, 77, .12);
+    --ok: #30a46c;
+    --ok-bg: rgba(48, 164, 108, .12);
+    --field: #12121a;
+    --field-border: #32323f;
+    --radius: 14px;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4f5f7;
+      --bg-grad-a: #ffffff;
+      --bg-grad-b: #e9ebef;
+      --card: #ffffff;
+      --card-border: #e2e4e9;
+      --text: #16161a;
+      --muted: #666674;
+      --field: #f7f8fa;
+      --field-border: #d7d9e0;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    background-image: radial-gradient(120% 80% at 50% 0%, var(--bg-grad-a) 0%, var(--bg-grad-b) 70%);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 16px calc(32px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 8px 0 20px;
+    color: var(--muted);
+    font-size: .8rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .brand svg { width: 22px; height: 22px; display: block; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .28);
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.45rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+  }
+
+  .lead {
+    margin: 0 0 20px;
+    color: var(--muted);
+    font-size: .95rem;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .field { margin-bottom: 16px; }
+
+  input[type="text"],
+  input[type="password"],
+  textarea {
+    width: 100%;
+    background: var(--field);
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    color: var(--text);
+    font: inherit;
+    font-size: 1rem;
+    padding: 13px 14px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+
+  textarea { resize: vertical; min-height: 76px; }
+
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 164, 220, .18);
+  }
+
+  .pw-wrap { position: relative; }
+
+  .pw-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    background: none;
+    border: 0;
+    color: var(--muted);
+    font-size: .8rem;
+    font-weight: 600;
+    padding: 8px 10px;
+    min-height: 40px;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+
+  .pw-toggle:hover { color: var(--text); }
+
+  .hint {
+    margin-top: 6px;
+    font-size: .78rem;
+    color: var(--muted);
+  }
+
+  button.primary {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 14px 16px;
+    min-height: 50px;
+    cursor: pointer;
+    transition: background .15s ease, transform .05s ease;
+  }
+
+  button.primary:hover:not(:disabled) { background: var(--accent-strong); }
+  button.primary:active:not(:disabled) { transform: translateY(1px); }
+  button.primary:disabled { opacity: .6; cursor: not-allowed; }
+
+  .msg {
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: .9rem;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .msg.error { display: block; background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(229, 72, 77, .3); }
+  .msg.ok { display: block; background: var(--ok-bg); color: var(--ok); border: 1px solid rgba(48, 164, 108, .3); }
+
+  .done { text-align: center; padding: 8px 0 4px; }
+  .done svg { width: 54px; height: 54px; margin-bottom: 12px; }
+  .done h2 { margin: 0 0 8px; font-size: 1.2rem; font-weight: 600; }
+  .done p { margin: 0 0 20px; color: var(--muted); font-size: .95rem; }
+
+  a.secondary {
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .92rem;
+    padding: 10px;
+  }
+
+  a.secondary:hover { text-decoration: underline; }
+
+  .foot {
+    text-align: center;
+    color: var(--muted);
+    font-size: .8rem;
+    margin-top: 18px;
+  }
+
+  .foot a { color: var(--muted); }
+
+  .hidden { display: none !important; }
+
+  @media (min-width: 600px) {
+    body { justify-content: center; padding: 40px 24px; }
+    .card { padding: 32px 30px; }
+    h1 { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 2 3 7v6c0 5 3.8 8.4 9 9 5.2-.6 9-4 9-9V7l-9-5z"></path>
+      <path d="M9 12l2 2 4-4"></path>
+    </svg>
+    <span>Acesso ao servidor</span>
+  </div>
+
+  <div class="card">
+    <div id="loading" class="lead">Carregando…</div>
+
+    <div id="closed" class="hidden">
+      <h1>Cadastro fechado</h1>
+      <p class="lead">O administrador não está aceitando novos cadastros neste momento.</p>
+    </div>
+
+    <form id="form" class="hidden" autocomplete="on" novalidate>
+      <h1 id="title">Criar conta</h1>
+      <p class="lead" id="welcome"></p>
+
+      <div id="alert" class="msg" role="alert" aria-live="assertive"></div>
+
+      <div class="field">
+        <label for="username">Nome de usuário</label>
+        <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none"
+               autocorrect="off" spellcheck="false" inputmode="text" maxlength="32" required>
+        <div class="hint">De 3 a 32 caracteres. Letras, números e - _ . @ +</div>
+      </div>
+
+      <div class="field">
+        <label for="password">Senha</label>
+        <div class="pw-wrap">
+          <input id="password" name="password" type="password" autocomplete="new-password" required>
+          <button type="button" class="pw-toggle" id="pwToggle" aria-label="Mostrar senha">Mostrar</button>
+        </div>
+        <div class="hint" id="pwHint"></div>
+      </div>
+
+      <div class="field">
+        <label for="confirm">Repita a senha</label>
+        <input id="confirm" name="confirm" type="password" autocomplete="new-password" required>
+      </div>
+
+      <div class="field hidden" id="inviteField">
+        <label for="invite">Código de convite</label>
+        <input id="invite" name="invite" type="text" autocomplete="off" autocapitalize="none" spellcheck="false">
+      </div>
+
+      <div class="field hidden" id="messageField">
+        <label for="message">Recado para o administrador <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
+        <textarea id="message" name="message" maxlength="280" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="primary" id="submit">Enviar solicitação</button>
+    </form>
+
+    <div id="done" class="done hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M8 12.5l2.5 2.5L16 9.5"></path>
+      </svg>
+      <h2>Solicitação enviada</h2>
+      <p id="doneMsg"></p>
+      <a class="secondary" id="loginLink" href="../web/">Ir para a tela de login</a>
+    </div>
+  </div>
+
+  <p class="foot">Sua senha é guardada pelo próprio Jellyfin e nunca fica visível para o administrador.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // A página é servida em <base>/UserRegistration/Page — tudo o mais é relativo a isso.
+  var basePath = window.location.pathname.replace(/\/UserRegistration\/Page\/?$/i, "");
+  var api = function (path) { return basePath + "/UserRegistration/" + path; };
+
+  var el = function (id) { return document.getElementById(id); };
+  var loading = el("loading"), form = el("form"), closed = el("closed"), done = el("done");
+  var alertBox = el("alert"), submit = el("submit");
+  var minLen = 6;
+
+  function showAlert(text, kind) {
+    alertBox.textContent = text;
+    alertBox.className = "msg " + (kind || "error");
+    alertBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function clearAlert() {
+    alertBox.textContent = "";
+    alertBox.className = "msg";
+  }
+
+  el("pwToggle").addEventListener("click", function () {
+    var pw = el("password");
+    var show = pw.type === "password";
+    pw.type = show ? "text" : "password";
+    el("confirm").type = pw.type;
+    this.textContent = show ? "Ocultar" : "Mostrar";
+    this.setAttribute("aria-label", show ? "Ocultar senha" : "Mostrar senha");
+  });
+
+  fetch(api("Public/Status"), { headers: { "Accept": "application/json" } })
+    .then(function (r) { if (!r.ok) { throw new Error("status"); } return r.json(); })
+    .then(function (s) {
+      loading.classList.add("hidden");
+
+      if (!s.Enabled && !s.enabled) {
+        closed.classList.remove("hidden");
+        return;
+      }
+
+      var title = s.Title || s.title || "Criar conta";
+      var welcome = s.WelcomeMessage || s.welcomeMessage || "";
+      minLen = s.MinimumPasswordLength || s.minimumPasswordLength || 6;
+
+      document.title = title;
+      el("title").textContent = title;
+      el("welcome").textContent = welcome;
+      el("pwHint").textContent = "Pelo menos " + minLen + " caracteres.";
+      el("password").setAttribute("minlength", String(minLen));
+
+      if (s.RequiresInviteCode || s.requiresInviteCode) {
+        el("inviteField").classList.remove("hidden");
+        el("invite").setAttribute("required", "required");
+      }
+
+      if (s.AllowMessage || s.allowMessage) {
+        el("messageField").classList.remove("hidden");
+      }
+
+      el("doneMsg").textContent = s.SuccessMessage || s.successMessage
+        || "Solicitação enviada! Aguarde a aprovação do administrador.";
+
+      form.classList.remove("hidden");
+      el("username").focus();
+    })
+    .catch(function () {
+      loading.textContent = "Não foi possível falar com o servidor. Atualize a página e tente de novo.";
+    });
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    clearAlert();
+
+    var username = el("username").value.trim();
+    var password = el("password").value;
+    var confirm = el("confirm").value;
+
+    if (username.length < 3) { showAlert("Informe um nome de usuário com pelo menos 3 caracteres."); return; }
+    if (!/^[a-zA-Z0-9\-_'.@+]+$/.test(username)) { showAlert("O nome de usuário tem caracteres não permitidos."); return; }
+    if (password.length < minLen) { showAlert("A senha precisa ter pelo menos " + minLen + " caracteres."); return; }
+    if (password !== confirm) { showAlert("As senhas não conferem."); return; }
+
+    submit.disabled = true;
+    submit.textContent = "Enviando…";
+
+    fetch(api("Public/Register"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        Username: username,
+        Password: password,
+        ConfirmPassword: confirm,
+        InviteCode: el("invite").value,
+        Message: el("message").value
+      })
+    })
+      .then(function (r) {
+        return r.text().then(function (body) {
+          var data = null;
+          try { data = body ? JSON.parse(body) : null; } catch (e) { data = null; }
+          if (!r.ok) {
+            var detail = (data && (data.detail || data.Detail || data.title || data.Title))
+              || "Não foi possível concluir o cadastro.";
+            throw new Error(detail);
+          }
+          return data;
+        });
+      })
+      .then(function (data) {
+        if (data && (data.Message || data.message)) {
+          el("doneMsg").textContent = data.Message || data.message;
+        }
+        form.classList.add("hidden");
+        done.classList.remove("hidden");
+      })
+      .catch(function (err) {
+        showAlert(err.message || "Não foi possível concluir o cadastro.");
+        submit.disabled = false;
+        submit.textContent = "Enviar solicitação";
+      });
+  });
+
+  el("loginLink").setAttribute("href", (basePath || "") + "/web/");
+})();
+</script>
+</body>
+</html>

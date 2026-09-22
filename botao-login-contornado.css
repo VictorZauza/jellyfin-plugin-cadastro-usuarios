@@ -1,0 +1,13 @@
+#loginPage .readOnlyContent { display: flex; flex-direction: column; }
+#loginPage .loginDisclaimerContainer { display: block; order: -1; margin-top: 0; }
+#loginPage .loginDisclaimer, #loginPage .loginDisclaimer p { margin: 0; }
+#loginPage .loginDisclaimer a {
+    display: block; box-sizing: border-box; width: 100%;
+    margin: 0.25em 0; padding: 0.82em 1em;
+    border: 2px solid #00a4dc; border-radius: 0.2em;
+    background: transparent; color: #00a4dc;
+    font-weight: 600; line-height: 1.35; text-align: center; text-decoration: none; transition: 0.2s;
+}
+#loginPage .loginDisclaimer a:hover, #loginPage .loginDisclaimer a:focus {
+    background: rgba(0,164,220,.15); color: #fff; text-decoration: none;
+}

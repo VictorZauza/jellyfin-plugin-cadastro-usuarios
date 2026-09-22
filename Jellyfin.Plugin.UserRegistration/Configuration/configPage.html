@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>Cadastro de Usuários</title>
+</head>
+<body>
+<div id="UserRegistrationConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
+     data-require="emby-input,emby-button,emby-select,emby-checkbox">
+    <div data-role="content">
+        <div class="content-primary">
+
+            <style>
+                .ur-section { margin-bottom: 2.4em; }
+                .ur-section h2 { margin-bottom: .3em; }
+                .ur-sub { color: #999; margin: 0 0 1em; font-size: .92em; }
+                .ur-card {
+                    border: 1px solid rgba(255,255,255,.14);
+                    border-radius: 8px;
+                    padding: 1em 1.1em;
+                    margin-bottom: .8em;
+                    background: rgba(255,255,255,.035);
+                }
+                .ur-card-head {
+                    display: flex; flex-wrap: wrap; align-items: baseline;
+                    gap: .6em; margin-bottom: .35em;
+                }
+                .ur-name { font-size: 1.15em; font-weight: 600; word-break: break-all; }
+                .ur-meta { color: #999; font-size: .85em; }
+                .ur-msg {
+                    margin: .5em 0 .2em; padding: .55em .7em;
+                    border-left: 3px solid rgba(0,164,220,.6);
+                    background: rgba(0,164,220,.07);
+                    font-size: .9em; white-space: pre-wrap; word-break: break-word;
+                }
+                .ur-actions { display: flex; flex-wrap: wrap; gap: .5em; margin-top: .9em; }
+                .ur-actions button { margin: 0; }
+                .ur-empty { color: #999; padding: .6em 0; }
+                .ur-badge {
+                    display: inline-block; padding: .15em .6em; border-radius: 999px;
+                    font-size: .75em; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+                }
+                .ur-badge.approved { background: rgba(48,164,108,.18); color: #4cc38a; }
+                .ur-badge.rejected { background: rgba(229,72,77,.18); color: #ff6369; }
+                .ur-badge.pending  { background: rgba(0,164,220,.18); color: #52b9e9; }
+                .ur-link-box {
+                    display: flex; flex-wrap: wrap; gap: .5em; align-items: center;
+                    padding: .7em .9em; border-radius: 8px;
+                    background: rgba(0,164,220,.08); border: 1px solid rgba(0,164,220,.25);
+                    word-break: break-all;
+                }
+                .ur-link-box code { font-size: .95em; }
+                .ur-history-row {
+                    display: flex; flex-wrap: wrap; gap: .6em; align-items: center;
+                    padding: .55em 0; border-bottom: 1px solid rgba(255,255,255,.08);
+                }
+                .ur-history-row .ur-grow { flex: 1 1 200px; }
+            </style>
+
+            <div class="ur-section">
+                <h2>Link da tela de cadastro</h2>
+                <p class="ur-sub">Envie este endereço para quem vai criar uma conta. A tela funciona no celular e no computador.</p>
+                <div class="ur-link-box">
+                    <code id="urPublicLink">&nbsp;</code>
+                    <button is="emby-button" type="button" id="urCopyLink" class="raised">
+                        <span>Copiar</span>
+                    </button>
+                    <button is="emby-button" type="button" id="urOpenLink" class="raised">
+                        <span>Abrir</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="ur-section">
+                <h2>Solicitações aguardando confirmação <span id="urPendingCount" class="ur-badge pending">0</span></h2>
+                <p class="ur-sub">
+                    A conta já existe no servidor, porém desativada: ninguém entra com ela até você confirmar.
+                    Ao recusar, a conta é apagada e o nome fica livre de novo.
+                </p>
+                <div id="urPendingList"></div>
+                <button is="emby-button" type="button" id="urRefresh" class="raised">
+                    <span>Atualizar lista</span>
+                </button>
+            </div>
+
+            <div class="ur-section">
+                <h2>Configurações</h2>
+                <form id="UserRegistrationConfigForm">
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="EnableRegistration" name="EnableRegistration" type="checkbox" is="emby-checkbox"/>
+                            <span>Aceitar novos cadastros</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Desmarque para fechar a tela pública sem desinstalar o plugin.
+                        </div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="InviteCode">Código de convite</label>
+                        <input id="InviteCode" name="InviteCode" type="text" is="emby-input"/>
+                        <div class="fieldDescription">Deixe vazio para não exigir código. Com código, só quem souber consegue solicitar.</div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="MinimumPasswordLength">Tamanho mínimo da senha</label>
+                        <input id="MinimumPasswordLength" name="MinimumPasswordLength" type="number" is="emby-input" min="1" max="128"/>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="MaxPendingRequests">Máximo de solicitações pendentes</label>
+                        <input id="MaxPendingRequests" name="MaxPendingRequests" type="number" is="emby-input" min="0" max="1000"/>
+                        <div class="fieldDescription">0 = sem limite. Evita que a fila seja inundada.</div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="MaxRequestsPerHourPerAddress">Solicitações por hora, por endereço IP</label>
+                        <input id="MaxRequestsPerHourPerAddress" name="MaxRequestsPerHourPerAddress" type="number" is="emby-input" min="0" max="100"/>
+                        <div class="fieldDescription">0 = sem limite.</div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="AllowMessage" name="AllowMessage" type="checkbox" is="emby-checkbox"/>
+                            <span>Permitir recado para o administrador</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Um campo de texto opcional na tela de cadastro (ex.: "sou o primo do João").
+                        </div>
+                    </div>
+
+                    <h3>Permissões da conta aprovada</h3>
+
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="TemplateUserId">Copiar permissões de</label>
+                        <select is="emby-select" id="TemplateUserId" name="TemplateUserId" class="emby-select-withcolor emby-select">
+                            <option value="00000000000000000000000000000000">Usar as opções abaixo</option>
+                        </select>
+                        <div class="fieldDescription">
+                            Escolha um usuário existente para servir de modelo. Poderes de administrador nunca são copiados.
+                        </div>
+                    </div>
+
+                    <div id="urDefaults">
+                        <div class="checkboxContainer">
+                            <label class="emby-checkbox-label">
+                                <input id="DefaultEnableAllFolders" type="checkbox" is="emby-checkbox"/>
+                                <span>Acesso a todas as bibliotecas</span>
+                            </label>
+                        </div>
+                        <div class="checkboxContainer">
+                            <label class="emby-checkbox-label">
+                                <input id="DefaultEnableRemoteAccess" type="checkbox" is="emby-checkbox"/>
+                                <span>Acesso de fora da rede local</span>
+                            </label>
+                        </div>
+                        <div class="checkboxContainer">
+                            <label class="emby-checkbox-label">
+                                <input id="DefaultEnableVideoPlaybackTranscoding" type="checkbox" is="emby-checkbox"/>
+                                <span>Permitir transcodificação de vídeo</span>
+                            </label>
+                        </div>
+                        <div class="checkboxContainer">
+                            <label class="emby-checkbox-label">
+                                <input id="DefaultEnableContentDownloading" type="checkbox" is="emby-checkbox"/>
+                                <span>Permitir baixar mídias</span>
+                            </label>
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="DefaultMaxActiveSessions">Sessões simultâneas</label>
+                            <input id="DefaultMaxActiveSessions" type="number" is="emby-input" min="0" max="50"/>
+                            <div class="fieldDescription">0 = sem limite.</div>
+                        </div>
+                    </div>
+
+                    <h3>Textos da tela pública</h3>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="PageTitle">Título</label>
+                        <input id="PageTitle" name="PageTitle" type="text" is="emby-input"/>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="WelcomeMessage">Texto de boas-vindas</label>
+                        <input id="WelcomeMessage" name="WelcomeMessage" type="text" is="emby-input"/>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="SuccessMessage">Mensagem após o envio</label>
+                        <input id="SuccessMessage" name="SuccessMessage" type="text" is="emby-input"/>
+                    </div>
+
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                            <span>Salvar</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="ur-section">
+                <h2>Histórico</h2>
+                <div id="urHistoryList"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var UserRegistrationConfig = {
+                pluginUniqueId: 'b4f0a5c2-9d71-4f3a-8f21-6c2e5a7d41b9'
+            };
+
+            var page = document.querySelector('#UserRegistrationConfigPage');
+
+            var EMPTY_GUID = '00000000000000000000000000000000';
+
+            function normalizeGuid(value) {
+                return String(value || '').replace(/-/g, '').toLowerCase();
+            }
+
+            function api(path) {
+                return ApiClient.getUrl('UserRegistration/' + path);
+            }
+
+            function esc(value) {
+                return String(value === null || value === undefined ? '' : value)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function fmtDate(value) {
+                if (!value) { return ''; }
+                var d = new Date(value);
+                return isNaN(d.getTime()) ? '' : d.toLocaleString();
+            }
+
+            function publicUrl() {
+                var url = ApiClient.getUrl('UserRegistration/Page');
+                if (url.indexOf('http') !== 0) {
+                    url = window.location.origin + (url.charAt(0) === '/' ? '' : '/') + url;
+                }
+                return url.split('?')[0];
+            }
+
+            function errorText(err) {
+                if (err && err.responseJSON && (err.responseJSON.detail || err.responseJSON.title)) {
+                    return err.responseJSON.detail || err.responseJSON.title;
+                }
+                if (err && typeof err.responseText === 'string' && err.responseText) {
+                    try {
+                        var parsed = JSON.parse(err.responseText);
+                        if (parsed.detail || parsed.title) { return parsed.detail || parsed.title; }
+                    } catch (e) { /* ignora */ }
+                }
+                return 'Não foi possível concluir a operação.';
+            }
+
+            function decide(id, action, username) {
+                var confirmText = action === 'Approve'
+                    ? 'Confirmar o cadastro de "' + username + '"? A conta será liberada para login.'
+                    : 'Recusar "' + username + '"? A conta criada será apagada.';
+
+                var ask = (window.Dashboard && Dashboard.confirm)
+                    ? Dashboard.confirm(confirmText, action === 'Approve' ? 'Confirmar cadastro' : 'Recusar cadastro')
+                    : Promise.resolve(window.confirm(confirmText));
+
+                Promise.resolve(ask).then(function (ok) {
+                    if (ok === false) { return; }
+                    Dashboard.showLoadingMsg();
+                    ApiClient.ajax({
+                        type: 'POST',
+                        url: api('Requests/' + id + '/' + action)
+                    }).then(function () {
+                        Dashboard.hideLoadingMsg();
+                        Dashboard.alert(action === 'Approve'
+                            ? 'Cadastro confirmado. O usuário já pode entrar.'
+                            : 'Cadastro recusado e conta removida.');
+                        loadRequests();
+                    }, function (err) {
+                        Dashboard.hideLoadingMsg();
+                        Dashboard.alert({ title: 'Erro', message: errorText(err) });
+                        loadRequests();
+                    });
+                });
+            }
+
+            function removeFromHistory(id) {
+                Dashboard.showLoadingMsg();
+                ApiClient.ajax({ type: 'DELETE', url: api('Requests/' + id) }).then(function () {
+                    Dashboard.hideLoadingMsg();
+                    loadRequests();
+                }, function (err) {
+                    Dashboard.hideLoadingMsg();
+                    Dashboard.alert({ title: 'Erro', message: errorText(err) });
+                });
+            }
+
+            function renderRequests(items) {
+                var pending = items.filter(function (r) { return r.State === 'Pending'; });
+                var history = items.filter(function (r) { return r.State !== 'Pending'; });
+
+                page.querySelector('#urPendingCount').textContent = String(pending.length);
+
+                var pendingHtml = pending.map(function (r) {
+                    var warn = r.AccountExists ? '' :
+                        '<div class="ur-msg" style="border-left-color:#e5484d;background:rgba(229,72,77,.08)">' +
+                        'A conta desta solicitação não existe mais no servidor.</div>';
+                    return '' +
+                        '<div class="ur-card">' +
+                            '<div class="ur-card-head">' +
+                                '<span class="ur-name">' + esc(r.Username) + '</span>' +
+                                '<span class="ur-meta">' + esc(fmtDate(r.RequestedAt)) +
+                                (r.RemoteAddress ? ' · ' + esc(r.RemoteAddress) : '') + '</span>' +
+                            '</div>' +
+                            (r.Message ? '<div class="ur-msg">' + esc(r.Message) + '</div>' : '') +
+                            warn +
+                            '<div class="ur-actions">' +
+                                '<button is="emby-button" type="button" class="raised button-submit ur-approve" ' +
+                                    'data-id="' + esc(r.Id) + '" data-user="' + esc(r.Username) + '"><span>Confirmar cadastro</span></button>' +
+                                '<button is="emby-button" type="button" class="raised ur-reject" ' +
+                                    'data-id="' + esc(r.Id) + '" data-user="' + esc(r.Username) + '"><span>Recusar</span></button>' +
+                            '</div>' +
+                        '</div>';
+                }).join('');
+
+                page.querySelector('#urPendingList').innerHTML = pendingHtml ||
+                    '<p class="ur-empty">Nenhuma solicitação aguardando confirmação.</p>';
+
+                var historyHtml = history.map(function (r) {
+                    var cls = r.State === 'Approved' ? 'approved' : 'rejected';
+                    var label = r.State === 'Approved' ? 'Aprovado' : 'Recusado';
+                    return '' +
+                        '<div class="ur-history-row">' +
+                            '<span class="ur-grow"><strong>' + esc(r.Username) + '</strong> ' +
+                                '<span class="ur-meta">' + esc(fmtDate(r.DecidedAt || r.RequestedAt)) +
+                                (r.DecidedBy ? ' · por ' + esc(r.DecidedBy) : '') + '</span></span>' +
+                            '<span class="ur-badge ' + cls + '">' + label + '</span>' +
+                            '<button is="emby-button" type="button" class="raised ur-remove" data-id="' + esc(r.Id) + '">' +
+                                '<span>Remover</span></button>' +
+                        '</div>';
+                }).join('');
+
+                page.querySelector('#urHistoryList').innerHTML = historyHtml ||
+                    '<p class="ur-empty">Nada no histórico ainda.</p>';
+
+                Array.prototype.forEach.call(page.querySelectorAll('.ur-approve'), function (btn) {
+                    btn.addEventListener('click', function () {
+                        decide(btn.getAttribute('data-id'), 'Approve', btn.getAttribute('data-user'));
+                    });
+                });
+                Array.prototype.forEach.call(page.querySelectorAll('.ur-reject'), function (btn) {
+                    btn.addEventListener('click', function () {
+                        decide(btn.getAttribute('data-id'), 'Reject', btn.getAttribute('data-user'));
+                    });
+                });
+                Array.prototype.forEach.call(page.querySelectorAll('.ur-remove'), function (btn) {
+                    btn.addEventListener('click', function () {
+                        removeFromHistory(btn.getAttribute('data-id'));
+                    });
+                });
+            }
+
+            function loadRequests() {
+                return ApiClient.ajax({
+                    type: 'GET',
+                    url: api('Requests'),
+                    dataType: 'json'
+                }).then(renderRequests, function () {
+                    page.querySelector('#urPendingList').innerHTML =
+                        '<p class="ur-empty">Não foi possível carregar as solicitações.</p>';
+                });
+            }
+
+            function loadUsers(selectedId) {
+                return ApiClient.ajax({
+                    type: 'GET',
+                    url: api('Users'),
+                    dataType: 'json'
+                }).then(function (users) {
+                    var select = page.querySelector('#TemplateUserId');
+                    var html = '<option value="' + EMPTY_GUID + '">Usar as opções abaixo</option>';
+                    users.forEach(function (u) {
+                        html += '<option value="' + esc(normalizeGuid(u.Id)) + '">' + esc(u.Name) + '</option>';
+                    });
+                    select.innerHTML = html;
+                    select.value = normalizeGuid(selectedId) || EMPTY_GUID;
+                    if (!select.value) {
+                        select.value = EMPTY_GUID;
+                    }
+
+                    toggleDefaults();
+                }, function () { /* ignora */ });
+            }
+
+            function toggleDefaults() {
+                var value = page.querySelector('#TemplateUserId').value;
+                var usingTemplate = value !== EMPTY_GUID && value !== '';
+                page.querySelector('#urDefaults').style.display = usingTemplate ? 'none' : '';
+            }
+
+            function loadConfig() {
+                return ApiClient.getPluginConfiguration(UserRegistrationConfig.pluginUniqueId).then(function (config) {
+                    page.querySelector('#EnableRegistration').checked = config.EnableRegistration;
+                    page.querySelector('#InviteCode').value = config.InviteCode || '';
+                    page.querySelector('#MinimumPasswordLength').value = config.MinimumPasswordLength;
+                    page.querySelector('#MaxPendingRequests').value = config.MaxPendingRequests;
+                    page.querySelector('#MaxRequestsPerHourPerAddress').value = config.MaxRequestsPerHourPerAddress;
+                    page.querySelector('#AllowMessage').checked = config.AllowMessage;
+                    page.querySelector('#DefaultEnableAllFolders').checked = config.DefaultEnableAllFolders;
+                    page.querySelector('#DefaultEnableRemoteAccess').checked = config.DefaultEnableRemoteAccess;
+                    page.querySelector('#DefaultEnableVideoPlaybackTranscoding').checked = config.DefaultEnableVideoPlaybackTranscoding;
+                    page.querySelector('#DefaultEnableContentDownloading').checked = config.DefaultEnableContentDownloading;
+                    page.querySelector('#DefaultMaxActiveSessions').value = config.DefaultMaxActiveSessions;
+                    page.querySelector('#PageTitle').value = config.PageTitle || '';
+                    page.querySelector('#WelcomeMessage').value = config.WelcomeMessage || '';
+                    page.querySelector('#SuccessMessage').value = config.SuccessMessage || '';
+                    return loadUsers(config.TemplateUserId);
+                });
+            }
+
+            page.addEventListener('pageshow', function () {
+                Dashboard.showLoadingMsg();
+                page.querySelector('#urPublicLink').textContent = publicUrl();
+                Promise.all([loadConfig(), loadRequests()]).then(function () {
+                    Dashboard.hideLoadingMsg();
+                }, function () {
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            page.querySelector('#TemplateUserId').addEventListener('change', toggleDefaults);
+
+            page.querySelector('#urRefresh').addEventListener('click', function () {
+                Dashboard.showLoadingMsg();
+                loadRequests().then(function () { Dashboard.hideLoadingMsg(); });
+            });
+
+            page.querySelector('#urCopyLink').addEventListener('click', function () {
+                var url = publicUrl();
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).then(function () {
+                        Dashboard.alert('Link copiado.');
+                    }, function () {
+                        Dashboard.alert({ title: 'Link da tela de cadastro', message: url });
+                    });
+                } else {
+                    Dashboard.alert({ title: 'Link da tela de cadastro', message: url });
+                }
+            });
+
+            page.querySelector('#urOpenLink').addEventListener('click', function () {
+                window.open(publicUrl(), '_blank', 'noopener');
+            });
+
+            page.querySelector('#UserRegistrationConfigForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+
+                ApiClient.getPluginConfiguration(UserRegistrationConfig.pluginUniqueId).then(function (config) {
+                    config.EnableRegistration = page.querySelector('#EnableRegistration').checked;
+                    config.InviteCode = page.querySelector('#InviteCode').value.trim();
+                    config.MinimumPasswordLength = parseInt(page.querySelector('#MinimumPasswordLength').value, 10) || 6;
+                    config.MaxPendingRequests = parseInt(page.querySelector('#MaxPendingRequests').value, 10) || 0;
+                    config.MaxRequestsPerHourPerAddress = parseInt(page.querySelector('#MaxRequestsPerHourPerAddress').value, 10) || 0;
+                    config.AllowMessage = page.querySelector('#AllowMessage').checked;
+                    config.TemplateUserId = page.querySelector('#TemplateUserId').value || EMPTY_GUID;
+                    config.DefaultEnableAllFolders = page.querySelector('#DefaultEnableAllFolders').checked;
+                    config.DefaultEnableRemoteAccess = page.querySelector('#DefaultEnableRemoteAccess').checked;
+                    config.DefaultEnableVideoPlaybackTranscoding = page.querySelector('#DefaultEnableVideoPlaybackTranscoding').checked;
+                    config.DefaultEnableContentDownloading = page.querySelector('#DefaultEnableContentDownloading').checked;
+                    config.DefaultMaxActiveSessions = parseInt(page.querySelector('#DefaultMaxActiveSessions').value, 10) || 0;
+                    config.PageTitle = page.querySelector('#PageTitle').value;
+                    config.WelcomeMessage = page.querySelector('#WelcomeMessage').value;
+                    config.SuccessMessage = page.querySelector('#SuccessMessage').value;
+
+                    ApiClient.updatePluginConfiguration(UserRegistrationConfig.pluginUniqueId, config)
+                        .then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                });
+
+                return false;
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>

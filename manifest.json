@@ -1,0 +1,20 @@
+[
+  {
+    "guid": "b4f0a5c2-9d71-4f3a-8f21-6c2e5a7d41b9",
+    "name": "Cadastro de Usuários",
+    "description": "Tela pública para o visitante criar uma conta e um painel onde o administrador confirma cada cadastro.",
+    "overview": "Cadastro de usuários com aprovação do administrador",
+    "owner": "VictorZauza",
+    "category": "General",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "Versão 1.0.0.0.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/VictorZauza/jellyfin-plugin-cadastro-usuarios/main/dist/cadastro-usuarios_1.0.0.0.zip",
+        "checksum": "D273936A4FC776C2730ED4BC2013F0E8",
+        "timestamp": "2026-09-18T19:18:40Z"
+      }
+    ]
+  }
+]
