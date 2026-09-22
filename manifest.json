@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "1.1.2.0",
+        "changelog": "Atalho do plugin na barra lateral do painel.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/VictorZauza/jellyfin-plugin-cadastro-usuarios/main/dist/cadastro-usuarios_1.1.2.0.zip",
+        "checksum": "70EEC6F5F02C6B88BD7A41A5EF67F07D",
+        "timestamp": "2026-09-22T18:47:26Z"
+      },
+      {
         "version": "1.1.1.0",
         "changelog": "Corrige o cadastro no Jellyfin 10.11.6 ou mais novo (mudança na API de senha do servidor).",
         "targetAbi": "10.11.0.0",

@@ -49,6 +49,11 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
             new PluginPageInfo
             {
                 Name = Name,
+
+                // Coloca o plugin na barra lateral do painel, na seção "Plugins".
+                DisplayName = Name,
+                EnableInMainMenu = true,
+                MenuIcon = "person_add",
                 EmbeddedResourcePath = string.Format(
                     CultureInfo.InvariantCulture,
                     "{0}.Configuration.configPage.html",

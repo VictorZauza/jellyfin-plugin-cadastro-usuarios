@@ -156,6 +156,9 @@ variante e uma versão contornada.
 
 ## Configurações do painel
 
+O plugin aparece na **barra lateral do painel**, na seção Plugins, como atalho direto
+para esta tela.
+
 | Configuração | Para que serve |
 |---|---|
 | Aceitar novos cadastros | Fecha ou abre a tela pública sem desinstalar o plugin |
