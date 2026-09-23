@@ -521,8 +521,10 @@ public class RegistrationService
         // Nunca herda poderes de administrador nem o estado desativado do modelo.
         policy.IsAdministrator = false;
         policy.IsDisabled = false;
-        policy.IsHidden = false;
         policy.InvalidLoginAttemptCount = 0;
+
+        // Oculta (ou não) a conta na lista de usuários da tela de login.
+        policy.IsHidden = config.HideApprovedFromLoginScreen;
 
         await _userManager.UpdatePolicyAsync(user.Id, policy).ConfigureAwait(false);
     }

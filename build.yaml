@@ -1,7 +1,7 @@
 ---
 name: "Cadastro de Usuários"
 guid: "b4f0a5c2-9d71-4f3a-8f21-6c2e5a7d41b9"
-version: "1.1.2.0"
+version: "1.1.3.0"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 overview: "Cadastro de usuários com aprovação do administrador"
@@ -14,4 +14,4 @@ owner: "victor.flores"
 artifacts:
   - "Jellyfin.Plugin.UserRegistration.dll"
 changelog: >
-  1.1.2.0 - Atalho do plugin na barra lateral do painel.
+  1.1.3.0 - Opção de ocultar as contas aprovadas da tela de login (ligada por padrão).

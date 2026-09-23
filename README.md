@@ -169,6 +169,7 @@ para esta tela.
 | Permitir recado | Campo de texto opcional para o solicitante se identificar |
 | Copiar permissões de | Usa um usuário existente como modelo ao aprovar |
 | Permissões padrão | Bibliotecas, acesso remoto, download, transcodificação, sessões |
+| Ocultar as contas aprovadas da tela de login | Tira os quadradinhos de usuário da tela de login (ligada por padrão) |
 | Mostrar o formulário na tela de login | Liga/desliga o botão "Criar conta" dentro da tela de login |
 | Textos da tela pública | Título, boas-vindas e mensagem de sucesso |
 

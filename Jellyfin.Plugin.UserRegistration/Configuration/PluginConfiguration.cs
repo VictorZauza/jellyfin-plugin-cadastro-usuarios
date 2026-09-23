@@ -75,6 +75,12 @@ public class PluginConfiguration : BasePluginConfiguration
     public int DefaultMaxActiveSessions { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether as contas aprovadas ficam ocultas
+    /// na lista de usuários da tela de login.
+    /// </summary>
+    public bool HideApprovedFromLoginScreen { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets a value indicating whether o formulário de cadastro aparece
     /// dentro da própria tela de login do Jellyfin.
     /// </summary>
