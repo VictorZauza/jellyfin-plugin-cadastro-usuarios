@@ -20,16 +20,22 @@ namespace Jellyfin.Plugin.UserRegistration.Api;
 public class UserRegistrationController : ControllerBase
 {
     private readonly RegistrationService _service;
+    private readonly NotificationService _notifications;
     private readonly ILogger<UserRegistrationController> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserRegistrationController"/> class.
     /// </summary>
     /// <param name="service">Serviço de cadastro.</param>
+    /// <param name="notifications">Serviço de avisos ao administrador.</param>
     /// <param name="logger">Logger.</param>
-    public UserRegistrationController(RegistrationService service, ILogger<UserRegistrationController> logger)
+    public UserRegistrationController(
+        RegistrationService service,
+        NotificationService notifications,
+        ILogger<UserRegistrationController> logger)
     {
         _service = service;
+        _notifications = notifications;
         _logger = logger;
     }
 
@@ -171,6 +177,19 @@ public class UserRegistrationController : ControllerBase
         {
             return Problem(ex.Message, statusCode: ex.StatusCode);
         }
+    }
+
+    /// <summary>
+    /// Dispara um aviso de teste para o webhook configurado (somente administrador).
+    /// </summary>
+    /// <returns>O que aconteceu no envio.</returns>
+    [HttpPost("TestNotification")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<NotificationTestResultDto>> TestNotification()
+    {
+        var message = await _notifications.SendTestAsync().ConfigureAwait(false);
+        return Ok(new NotificationTestResultDto { Message = message });
     }
 
     /// <summary>

@@ -147,6 +147,17 @@ public class RegistrationRequestDto
 }
 
 /// <summary>
+/// Resultado do envio de um aviso de teste.
+/// </summary>
+public class NotificationTestResultDto
+{
+    /// <summary>
+    /// Gets or sets a descrição do que aconteceu no envio.
+    /// </summary>
+    public string Message { get; set; } = string.Empty;
+}
+
+/// <summary>
 /// Um usuário do servidor, para escolha do perfil modelo no painel.
 /// </summary>
 public class SimpleUserDto

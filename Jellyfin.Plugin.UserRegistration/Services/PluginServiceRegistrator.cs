@@ -13,6 +13,7 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
     public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
     {
         serviceCollection.AddSingleton<RequestStore>();
+        serviceCollection.AddSingleton<NotificationService>();
         serviceCollection.AddSingleton<RegistrationService>();
         serviceCollection.AddHostedService<LoginPageInjector>();
     }

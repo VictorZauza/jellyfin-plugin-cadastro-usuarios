@@ -92,6 +92,7 @@ public class RegistrationService
 
     private readonly IUserManager _userManager;
     private readonly RequestStore _store;
+    private readonly NotificationService _notifications;
     private readonly ILogger<RegistrationService> _logger;
 
     /// <summary>
@@ -99,11 +100,17 @@ public class RegistrationService
     /// </summary>
     /// <param name="userManager">Gerenciador de usuários do Jellyfin.</param>
     /// <param name="store">Armazenamento das solicitações.</param>
+    /// <param name="notifications">Serviço de avisos ao administrador.</param>
     /// <param name="logger">Logger.</param>
-    public RegistrationService(IUserManager userManager, RequestStore store, ILogger<RegistrationService> logger)
+    public RegistrationService(
+        IUserManager userManager,
+        RequestStore store,
+        NotificationService notifications,
+        ILogger<RegistrationService> logger)
     {
         _userManager = userManager;
         _store = store;
+        _notifications = notifications;
         _logger = logger;
     }
 
@@ -249,6 +256,9 @@ public class RegistrationService
                 "Nova solicitação de cadastro para {Username} (conta criada desativada, aguardando aprovação).",
                 username);
 
+            // Sai em segundo plano: o visitante não espera o webhook responder.
+            _notifications.QueueNewRequest(entry, pendingCount + 1);
+
             return new RegisterResultDto
             {
                 RequestId = entry.Id,
@@ -317,6 +327,11 @@ public class RegistrationService
             _store.Save(requests);
 
             _logger.LogInformation("Cadastro de {Username} aprovado por {Admin}.", entry.Username, decidedBy ?? "admin");
+
+            _notifications.QueueDecision(
+                entry,
+                true,
+                requests.Count(r => r.State == RegistrationRequestState.Pending));
         }
         finally
         {
@@ -355,6 +370,11 @@ public class RegistrationService
             _store.Save(requests);
 
             _logger.LogInformation("Cadastro de {Username} recusado por {Admin}.", entry.Username, decidedBy ?? "admin");
+
+            _notifications.QueueDecision(
+                entry,
+                false,
+                requests.Count(r => r.State == RegistrationRequestState.Pending));
         }
         finally
         {

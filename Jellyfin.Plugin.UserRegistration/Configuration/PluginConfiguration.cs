@@ -102,4 +102,56 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public string SuccessMessage { get; set; } =
         "Solicitação enviada! Assim que o administrador aprovar, você já poderá entrar com esse usuário e senha.";
+
+    /// <summary>
+    /// Gets or sets a value indicating whether cada solicitação gera uma linha
+    /// em Painel → Atividade do Jellyfin.
+    /// </summary>
+    public bool LogToActivity { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether avisa quando chega uma nova solicitação.
+    /// </summary>
+    public bool NotifyOnNewRequest { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether avisa quando uma solicitação é
+    /// aprovada ou recusada.
+    /// </summary>
+    public bool NotifyOnDecision { get; set; }
+
+    /// <summary>
+    /// Gets or sets o endereço do webhook. Vazio desliga o envio.
+    /// </summary>
+    public string WebhookUrl { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets o formato do corpo enviado ao webhook.
+    /// Valores aceitos: Discord, Slack, Ntfy, Gotify, Json, Custom.
+    /// </summary>
+    public string WebhookFormat { get; set; } = "Discord";
+
+    /// <summary>
+    /// Gets or sets cabeçalhos extras, um "Nome: valor" por linha.
+    /// Serve para tokens de autenticação de ntfy, Gotify e afins.
+    /// </summary>
+    public string WebhookHeaders { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets o corpo usado quando <see cref="WebhookFormat"/> é "Custom".
+    /// Aceita os marcadores {usuario}, {recado}, {ip}, {data}, {pendentes},
+    /// {id}, {acao}, {admin} e {texto}.
+    /// </summary>
+    public string WebhookBodyTemplate { get; set; } =
+        "{\"title\":\"{acao}\",\"body\":\"{texto}\"}";
+
+    /// <summary>
+    /// Gets or sets o Content-Type usado quando o formato é "Custom".
+    /// </summary>
+    public string WebhookContentType { get; set; } = "application/json";
+
+    /// <summary>
+    /// Gets or sets quantos segundos esperar pela resposta do webhook.
+    /// </summary>
+    public int WebhookTimeoutSeconds { get; set; } = 10;
 }

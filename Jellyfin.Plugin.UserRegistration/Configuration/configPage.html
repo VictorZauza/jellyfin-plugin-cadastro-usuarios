@@ -6,7 +6,7 @@
 </head>
 <body>
 <div id="UserRegistrationConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
-     data-require="emby-input,emby-button,emby-select,emby-checkbox">
+     data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea">
     <div data-role="content">
         <div class="content-primary">
 
@@ -214,10 +214,115 @@
                         <input id="SuccessMessage" name="SuccessMessage" type="text" is="emby-input"/>
                     </div>
 
+                    <h3>Avisos</h3>
+                    <p class="ur-sub">
+                        Sem isto, uma solicitação só aparece quando você abre esta página.
+                    </p>
+
+                    <div class="checkboxContainer checkboxContainerWithDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="NotifyOnNewRequest" name="NotifyOnNewRequest" type="checkbox" is="emby-checkbox"/>
+                            <span>Avisar quando alguém pedir acesso</span>
+                        </label>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainerWithDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="NotifyOnDecision" name="NotifyOnDecision" type="checkbox" is="emby-checkbox"/>
+                            <span>Avisar também quando um cadastro for aprovado ou recusado</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Útil quando mais de uma pessoa administra o servidor.
+                        </div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainerWithDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="LogToActivity" name="LogToActivity" type="checkbox" is="emby-checkbox"/>
+                            <span>Registrar em Painel → Atividade do Jellyfin</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Fica no histórico do servidor, sem depender de nada externo.
+                        </div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="WebhookUrl">Endereço do webhook</label>
+                        <input id="WebhookUrl" name="WebhookUrl" type="url" is="emby-input"
+                               placeholder="https://discord.com/api/webhooks/..."/>
+                        <div class="fieldDescription">
+                            Vazio desliga o envio e deixa só o registro em Atividade.
+                        </div>
+                    </div>
+
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="WebhookFormat">Formato do envio</label>
+                        <select is="emby-select" id="WebhookFormat" name="WebhookFormat"
+                                class="emby-select-withcolor emby-select">
+                            <option value="Discord">Discord</option>
+                            <option value="Slack">Slack / Mattermost</option>
+                            <option value="Ntfy">ntfy</option>
+                            <option value="Gotify">Gotify</option>
+                            <option value="Json">JSON estruturado (n8n, Home Assistant)</option>
+                            <option value="Custom">Corpo escrito à mão</option>
+                        </select>
+                        <div class="fieldDescription">
+                            Para Telegram, escolha "Corpo escrito à mão" — um exemplo pronto é preenchido.
+                        </div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="WebhookHeaders">
+                            Cabeçalhos extras (um por linha)
+                        </label>
+                        <textarea id="WebhookHeaders" name="WebhookHeaders" is="emby-textarea"
+                                  class="emby-textarea" rows="2"
+                                  placeholder="Authorization: Bearer tk_xxx"></textarea>
+                        <div class="fieldDescription">
+                            No formato <code>Nome: valor</code>. Necessário para ntfy e Gotify com token.
+                        </div>
+                    </div>
+
+                    <div id="urCustomBody">
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="WebhookBodyTemplate">
+                                Corpo enviado
+                            </label>
+                            <textarea id="WebhookBodyTemplate" name="WebhookBodyTemplate" is="emby-textarea"
+                                      class="emby-textarea" rows="4"></textarea>
+                            <div class="fieldDescription">
+                                Marcadores disponíveis: <code>{usuario}</code> <code>{recado}</code>
+                                <code>{ip}</code> <code>{data}</code> <code>{pendentes}</code>
+                                <code>{id}</code> <code>{acao}</code> <code>{admin}</code>
+                                <code>{texto}</code>. Se o tipo for JSON, os valores são escapados
+                                automaticamente.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="WebhookContentType">Content-Type</label>
+                            <input id="WebhookContentType" name="WebhookContentType" type="text" is="emby-input"/>
+                        </div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="WebhookTimeoutSeconds">
+                            Tempo limite, em segundos
+                        </label>
+                        <input id="WebhookTimeoutSeconds" name="WebhookTimeoutSeconds" type="number"
+                               is="emby-input" min="1" max="60"/>
+                    </div>
+
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
                             <span>Salvar</span>
                         </button>
+                        <button is="emby-button" type="button" id="urTestNotification" class="raised block">
+                            <span>Enviar aviso de teste</span>
+                        </button>
+                        <div class="fieldDescription">
+                            O teste usa o que está salvo no servidor, então salve antes.
+                        </div>
                     </div>
                 </form>
             </div>
@@ -424,6 +529,22 @@
                 page.querySelector('#urDefaults').style.display = usingTemplate ? 'none' : '';
             }
 
+            var TELEGRAM_EXEMPLO = '{"chat_id":"SEU_CHAT_ID","text":"{acao}\\n{texto}"}';
+
+            function toggleCustomBody() {
+                var custom = page.querySelector('#WebhookFormat').value === 'Custom';
+                page.querySelector('#urCustomBody').style.display = custom ? '' : 'none';
+
+                // Ao escolher o corpo à mão sem nada escrito, deixa um exemplo
+                // que já funciona no Telegram — é o caso que mais pede isso.
+                if (custom && !page.querySelector('#WebhookBodyTemplate').value.trim()) {
+                    page.querySelector('#WebhookBodyTemplate').value = TELEGRAM_EXEMPLO;
+                    if (!page.querySelector('#WebhookContentType').value.trim()) {
+                        page.querySelector('#WebhookContentType').value = 'application/json';
+                    }
+                }
+            }
+
             function loadConfig() {
                 return ApiClient.getPluginConfiguration(UserRegistrationConfig.pluginUniqueId).then(function (config) {
                     page.querySelector('#EnableRegistration').checked = config.EnableRegistration;
@@ -442,6 +563,16 @@
                     page.querySelector('#PageTitle').value = config.PageTitle || '';
                     page.querySelector('#WelcomeMessage').value = config.WelcomeMessage || '';
                     page.querySelector('#SuccessMessage').value = config.SuccessMessage || '';
+                    page.querySelector('#NotifyOnNewRequest').checked = config.NotifyOnNewRequest;
+                    page.querySelector('#NotifyOnDecision').checked = config.NotifyOnDecision;
+                    page.querySelector('#LogToActivity').checked = config.LogToActivity;
+                    page.querySelector('#WebhookUrl').value = config.WebhookUrl || '';
+                    page.querySelector('#WebhookFormat').value = config.WebhookFormat || 'Discord';
+                    page.querySelector('#WebhookHeaders').value = config.WebhookHeaders || '';
+                    page.querySelector('#WebhookBodyTemplate').value = config.WebhookBodyTemplate || '';
+                    page.querySelector('#WebhookContentType').value = config.WebhookContentType || 'application/json';
+                    page.querySelector('#WebhookTimeoutSeconds').value = config.WebhookTimeoutSeconds || 10;
+                    toggleCustomBody();
                     return loadUsers(config.TemplateUserId);
                 });
             }
@@ -457,6 +588,26 @@
             });
 
             page.querySelector('#TemplateUserId').addEventListener('change', toggleDefaults);
+
+            page.querySelector('#WebhookFormat').addEventListener('change', toggleCustomBody);
+
+            page.querySelector('#urTestNotification').addEventListener('click', function () {
+                Dashboard.showLoadingMsg();
+                ApiClient.ajax({
+                    type: 'POST',
+                    url: api('TestNotification'),
+                    dataType: 'json'
+                }).then(function (result) {
+                    Dashboard.hideLoadingMsg();
+                    Dashboard.alert({
+                        title: 'Aviso de teste',
+                        message: (result && result.Message) ? result.Message : 'Sem resposta do servidor.'
+                    });
+                }, function (err) {
+                    Dashboard.hideLoadingMsg();
+                    Dashboard.alert({ title: 'Aviso de teste', message: errorText(err) });
+                });
+            });
 
             page.querySelector('#urRefresh').addEventListener('click', function () {
                 Dashboard.showLoadingMsg();
@@ -502,6 +653,15 @@
                     config.PageTitle = page.querySelector('#PageTitle').value;
                     config.WelcomeMessage = page.querySelector('#WelcomeMessage').value;
                     config.SuccessMessage = page.querySelector('#SuccessMessage').value;
+                    config.NotifyOnNewRequest = page.querySelector('#NotifyOnNewRequest').checked;
+                    config.NotifyOnDecision = page.querySelector('#NotifyOnDecision').checked;
+                    config.LogToActivity = page.querySelector('#LogToActivity').checked;
+                    config.WebhookUrl = page.querySelector('#WebhookUrl').value.trim();
+                    config.WebhookFormat = page.querySelector('#WebhookFormat').value;
+                    config.WebhookHeaders = page.querySelector('#WebhookHeaders').value;
+                    config.WebhookBodyTemplate = page.querySelector('#WebhookBodyTemplate').value;
+                    config.WebhookContentType = page.querySelector('#WebhookContentType').value.trim();
+                    config.WebhookTimeoutSeconds = parseInt(page.querySelector('#WebhookTimeoutSeconds').value, 10) || 10;
 
                     ApiClient.updatePluginConfiguration(UserRegistrationConfig.pluginUniqueId, config)
                         .then(function (result) {
