@@ -26,22 +26,28 @@ namespace Jellyfin.Plugin.UserRegistration.Services;
 /// </remarks>
 public class NotificationService
 {
-    private readonly IActivityManager _activityManager;
+    private readonly IServiceProvider _services;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<NotificationService> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NotificationService"/> class.
     /// </summary>
-    /// <param name="activityManager">Registro de atividades do Jellyfin.</param>
+    /// <param name="services">Contêiner de serviços do servidor.</param>
     /// <param name="httpClientFactory">Fábrica de clientes HTTP do servidor.</param>
     /// <param name="logger">Logger.</param>
+    /// <remarks>
+    /// O <c>IActivityManager</c> é resolvido sob demanda, e não pelo construtor,
+    /// de propósito: se ele não existir nesta versão do servidor, o aviso deixa
+    /// de funcionar sozinho em vez de derrubar o plugin inteiro na injeção de
+    /// dependência — o que levaria junto a tela de cadastro e o painel.
+    /// </remarks>
     public NotificationService(
-        IActivityManager activityManager,
+        IServiceProvider services,
         IHttpClientFactory httpClientFactory,
         ILogger<NotificationService> logger)
     {
-        _activityManager = activityManager;
+        _services = services;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
     }
@@ -191,6 +197,12 @@ public class NotificationService
     {
         try
         {
+            if (_services.GetService(typeof(IActivityManager)) is not IActivityManager activityManager)
+            {
+                _logger.LogDebug("IActivityManager indisponível; o aviso em Atividade foi ignorado.");
+                return;
+            }
+
             var entry = new ActivityLog(
                 string.Format(CultureInfo.InvariantCulture, "{0}: {1}", fields["acao"], fields["usuario"]),
                 activityType,
@@ -201,7 +213,7 @@ public class NotificationService
                 LogSeverity = LogLevel.Information
             };
 
-            await _activityManager.CreateAsync(entry).ConfigureAwait(false);
+            await activityManager.CreateAsync(entry).ConfigureAwait(false);
         }
 #pragma warning disable CA1031
         catch (Exception ex)

@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "1.2.1.0",
+        "changelog": "Corrige a lista de usuários na tela de configuração em servidores 10.11.6 ou mais novos, onde a propriedade Users do Jellyfin virou o método GetUsers(). O registro em Painel -> Atividade passou a ser opcional, para não derrubar o plugin se mudar.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/VictorZauza/jellyfin-plugin-cadastro-usuarios/main/dist/cadastro-usuarios_1.2.1.0.zip",
+        "checksum": "C48C0459A3B2E6BB3AF99576D226DC54",
+        "timestamp": "2026-10-01T12:42:01Z"
+      },
+      {
         "version": "1.2.0.0",
         "changelog": "Avisos quando alguém pede acesso: registro em Painel -> Atividade e webhook (Discord, Slack, ntfy, Gotify, JSON ou corpo escrito à mão), com botão de teste no painel.",
         "targetAbi": "10.11.0.0",

@@ -90,6 +90,15 @@ public class RegistrationService
     private static readonly MethodInfo? _changePasswordByUser =
         typeof(IUserManager).GetMethod("ChangePassword", new[] { typeof(User), typeof(string) });
 
+    // Na mesma série 10.11 a propriedade Users virou o método GetUsers().
+    // Até a 10.11.5 existe a propriedade; da 10.11.6 em diante, o método.
+    // Resolver os dois por reflexão faz o mesmo binário servir às duas.
+    private static readonly PropertyInfo? _usersProperty =
+        typeof(IUserManager).GetProperty("Users");
+
+    private static readonly MethodInfo? _getUsersMethod =
+        typeof(IUserManager).GetMethod("GetUsers", Type.EmptyTypes);
+
     private readonly IUserManager _userManager;
     private readonly RequestStore _store;
     private readonly NotificationService _notifications;
@@ -417,11 +426,37 @@ public class RegistrationService
     public IReadOnlyList<SimpleUserDto> GetServerUsers()
     {
         // Contas desativadas (inclusive as que ainda aguardam aprovação) não servem de modelo.
-        return _userManager.Users
+        return GetAllUsers()
             .Where(u => !GetPolicy(u).IsDisabled)
             .Select(u => new SimpleUserDto { Id = u.Id, Name = u.Username })
             .OrderBy(u => u.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    /// <summary>
+    /// Lista os usuários do servidor sem depender da forma exata que o Jellyfin
+    /// expõe essa coleção, que mudou de propriedade para método no meio da 10.11.
+    /// </summary>
+    private IEnumerable<User> GetAllUsers()
+    {
+        object? resultado = _usersProperty is not null
+            ? _usersProperty.GetValue(_userManager)
+            : _getUsersMethod?.Invoke(_userManager, Array.Empty<object>());
+
+        if (resultado is not System.Collections.IEnumerable sequencia)
+        {
+            _logger.LogError(
+                "Esta versão do Jellyfin não expõe a lista de usuários de uma forma conhecida pelo plugin.");
+            yield break;
+        }
+
+        foreach (var item in sequencia)
+        {
+            if (item is User user)
+            {
+                yield return user;
+            }
+        }
     }
 
     private static string? Truncate(string value, int max) =>
